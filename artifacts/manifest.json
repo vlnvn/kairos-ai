@@ -1,0 +1,43 @@
+{
+  "artifact": "kairos_final.cbm",
+  "artifact_bytes": 756516,
+  "artifact_sha256": "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315",
+  "training_rows": 500000,
+  "training_seconds": 35.483028900000136,
+  "features": [
+    "slack_to_start_h",
+    "slack_to_end_h",
+    "window_width_h",
+    "accept_hour_sin",
+    "accept_hour_cos",
+    "day_of_week",
+    "task_lng",
+    "task_lat",
+    "accept_to_task_km",
+    "accept_gps_missing",
+    "prior_courier_accepts_day",
+    "prior_aoi_accepts_day",
+    "pending_other_count",
+    "pending_same_aoi_count",
+    "pending_due_before_count",
+    "pending_overlap_count",
+    "oldest_pending_age_h",
+    "pending_centroid_distance_km",
+    "pending_location_missing",
+    "region_id",
+    "aoi_type"
+  ],
+  "source_sha256": {
+    "pickup_cq.csv": "d58248d1aca9cf155bd202f311dff73f8562174d4e4041160a3996878143b056",
+    "pickup_hz.csv": "390b80be91d9b1ff80594c29d5206633db2759d54ccd4dff3d9f6f80513ab3e2",
+    "pickup_jl.csv": "ac5b9f76605b544bd19d79703d137c8656c5395dfaeeb297e3b10ea6b30c3eb1",
+    "pickup_sh.csv": "ebc564f1b6235e09ccca7cf4ccfe8a2014c91e99d973516e69350da9f7424db9",
+    "pickup_yt.csv": "00c049925a41d92112795718021f348da07f1adb84002de3f5707aef6ac01e91"
+  },
+  "snapshot": {
+    "source": "pickup_yt.csv",
+    "timestamp": "2024-06-22T07:36:00",
+    "target_tasks": 134,
+    "active_tasks": 388
+  }
+}
