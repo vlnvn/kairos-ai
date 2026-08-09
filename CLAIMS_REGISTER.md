@@ -18,9 +18,20 @@ code.
 | Frozen model | 300-tree CatBoost; SHA-256 `b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315` |
 
 The locally available approved files do not contain the four individual
-baseline-to-model Recall@10 pairs or the frozen inference resource measurement.
-Those two rows must be copied verbatim from the missing final-lock source pack
-before this sheet can be treated as release-complete evidence.
+baseline-to-model Recall@10 pairs, the unseen-courier and unseen-AOI baseline/model
+pairs, or the frozen inference resource measurement. Those values must be copied
+verbatim from the missing final-lock source pack before this sheet can be treated
+as release-complete evidence.
+
+## Product regression anchor
+
+The approved future-free replay contains 134 targets and deterministically emits
+14 `WINDOW_REVIEW` decisions. Its post-lock canonical product output uses UTF-8
+JSON with sorted keys and compact separators and has SHA-256
+`f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8`.
+This is a product regression anchor, not new scientific evidence. The historical
+ranked artifact for the previously recorded hash was unavailable after a bounded
+search.
 
 ## May claim
 
@@ -32,7 +43,7 @@ before this sheet can be treated as release-complete evidence.
   new-city holdouts and passed the recorded permutation controls.
 - Production inference does not require pickup outcomes or future events.
 
-The model output is an uncalibrated ordering score, not a failure probability.
+`review_score` is an uncalibrated ordering score, not a failure probability.
 Observational ranking performance is not proof that dispatcher intervention
 improves real-world outcomes; the human owns the operational decision.
 
