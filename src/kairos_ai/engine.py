@@ -1,6 +1,7 @@
 """Frozen, future-free feature and ranking engine."""
 from __future__ import annotations
 
+import hashlib
 import math
 from pathlib import Path
 
@@ -16,7 +17,14 @@ FEATURES = [
     "pending_due_before_count", "pending_overlap_count", "oldest_pending_age_h",
     "pending_centroid_distance_km", "pending_location_missing", "region_id", "aoi_type",
 ]
-FUTURE_FIELDS = {"pickup_time", "pickup_gps_time", "pickup_gps_lng", "pickup_gps_lat", "label", "target", "off_window", "actual_duration", "completed_at"}
+EXPECTED_MODEL_SHA256 = "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315"
+FUTURE_FIELDS = {
+    "actual_duration", "actual_pickup_at", "actual_pickup_timestamp",
+    "completed_at", "completion_status", "is_violation", "label", "off_window",
+    "outcome", "pickup_gps_lat", "pickup_gps_lng", "pickup_gps_time",
+    "pickup_time", "post_decision_route", "route_completed_at", "route_realization",
+    "target", "violated_window", "violation",
+}
 TOP_FIELDS = {"snapshot_time", "review_budget_fraction", "target_task_ids", "tasks"}
 TASK_FIELDS = {"task_id", "courier_key", "accepted_at", "window_start", "window_end", "region_id", "aoi_key", "aoi_type", "lng", "lat", "accept_gps_lng", "accept_gps_lat", "prior_courier_accepts_day", "prior_aoi_accepts_day", "is_pending"}
 REQUIRED_TASK = {"task_id", "courier_key", "accepted_at", "window_start", "window_end", "region_id", "aoi_key", "aoi_type", "lng", "lat", "is_pending"}
@@ -24,6 +32,27 @@ REQUIRED_TASK = {"task_id", "courier_key", "accepted_at", "window_start", "windo
 
 class SnapshotError(ValueError):
     """Fail-closed snapshot validation error."""
+
+
+class ModelArtifactError(RuntimeError):
+    """Raised when the frozen model artifact cannot be trusted."""
+
+
+def verify_model_artifact(model_path: str | Path) -> Path:
+    """Return a resolved path only when the frozen model hash is exact."""
+    path = Path(model_path).resolve()
+    if not path.is_file():
+        raise ModelArtifactError(f"model artifact not found: {path}")
+    digest = hashlib.sha256()
+    with path.open("rb") as artifact:
+        for chunk in iter(lambda: artifact.read(1024 * 1024), b""):
+            digest.update(chunk)
+    actual = digest.hexdigest()
+    if actual != EXPECTED_MODEL_SHA256:
+        raise ModelArtifactError(
+            f"model artifact SHA-256 mismatch: expected {EXPECTED_MODEL_SHA256}, got {actual}"
+        )
+    return path
 
 
 def parse_timestamp(value) -> pd.Timestamp:
@@ -133,9 +162,21 @@ def build_features(snapshot: dict) -> tuple[pd.DataFrame, list[str]]:
 
 
 class KairosRanker:
+    """Reusable deterministic adapter from a validated snapshot to ranked tasks.
+
+    ``score`` accepts an Operational Review Request-shaped dictionary and returns
+    priority-ordered task decision dictionaries. Invalid snapshots raise
+    :class:`SnapshotError`; an absent or modified model raises
+    :class:`ModelArtifactError` during construction. The verified CatBoost model
+    is loaded once per ranker instance and reused. Identical inputs, model bytes,
+    and runtime versions produce identical ordering, with ``task_id`` as the
+    stable tie-breaker.
+    """
+
     def __init__(self, model_path: str | Path):
+        self.model_path = verify_model_artifact(model_path)
         self.model = CatBoostClassifier()
-        self.model.load_model(str(model_path))
+        self.model.load_model(str(self.model_path))
 
     def score(self, snapshot: dict) -> list[dict]:
         features, ids = build_features(snapshot)
@@ -157,4 +198,3 @@ class KairosRanker:
                 "explanation_notice": "Non-causal model risk signals; dispatcher owns the decision.",
             })
         return sorted(output, key=lambda x: x["rank"])
-
