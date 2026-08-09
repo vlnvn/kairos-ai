@@ -1,0 +1,139 @@
+{
+  "artifact": "KAIROS final scientific lock evidence",
+  "schema_version": "1.0.0",
+  "freeze_status": "frozen",
+  "provenance": "Transcribed from the approved final scientific lock results supplied by the project scientific lead; not recomputed by the product repository.",
+  "scientific_headline": {
+    "metric": "Recall@10",
+    "scope": "frozen competition evaluation",
+    "capacity_boundary": "Operational review fractions other than 0.10 do not imply scientifically validated performance at those capacities."
+  },
+  "model": {
+    "family": "CatBoost context model",
+    "trees": 300,
+    "artifact": "kairos_final.cbm",
+    "artifact_bytes": 756516,
+    "sha256": "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315"
+  },
+  "dataset_audit": {
+    "source_rows_total": 6136147,
+    "excluded_acceptance_after_promised_end": 254,
+    "actionable_rows": 6135893,
+    "audited_cities": 5,
+    "cities": ["Jilin", "Shanghai", "Hangzhou", "Chongqing", "Yantai"],
+    "target": "TOO_EARLY OR TOO_LATE relative to the promised pickup window",
+    "target_balance_note": "The combined target is early-heavy; no independent late-only performance claim is supported."
+  },
+  "new_city_held_out": {
+    "role": "primary independent generalization evidence",
+    "results": [
+      {
+        "city": "Shanghai",
+        "baseline_recall_at_10": 0.1261,
+        "model_recall_at_10": 0.1804,
+        "delta_pp": 5.434
+      },
+      {
+        "city": "Hangzhou",
+        "baseline_recall_at_10": 0.1486,
+        "model_recall_at_10": 0.2056,
+        "delta_pp": 5.701
+      },
+      {
+        "city": "Chongqing",
+        "baseline_recall_at_10": 0.1772,
+        "model_recall_at_10": 0.2281,
+        "delta_pp": 5.090
+      },
+      {
+        "city": "Yantai",
+        "baseline_recall_at_10": 0.1357,
+        "model_recall_at_10": 0.1837,
+        "delta_pp": 4.797
+      }
+    ],
+    "improvement_count": 4,
+    "holdout_count": 4,
+    "aggregate_delta_pp": 5.23,
+    "aggregate_95ci_pp": [4.98, 5.47],
+    "median_delta_pp": 5.26,
+    "median_relative_improvement_percent": 36.86,
+    "worst_new_city": {
+      "city": "Yantai",
+      "delta_pp_approx": 4.80
+    }
+  },
+  "jilin_diagnostic": {
+    "independent_holdout": false,
+    "baseline_recall_at_10": 0.165810,
+    "model_recall_at_10": 0.219275,
+    "delta_pp_approx": 5.35
+  },
+  "unseen_courier": {
+    "baseline_recall_at_10": 0.1587,
+    "model_recall_at_10": 0.2100,
+    "delta_pp": 5.12,
+    "held_out_couriers": 1783,
+    "tasks": 83840,
+    "group_overlap": 0
+  },
+  "unseen_aoi": {
+    "baseline_recall_at_10": 0.1601,
+    "model_recall_at_10": 0.2128,
+    "delta_pp": 5.27,
+    "held_out_aois": 3556,
+    "tasks": 75995,
+    "group_overlap": 0
+  },
+  "identity_sensitivity": {
+    "evaluation_city": "Yantai",
+    "raw_identity_feature_delta_pp": -0.88,
+    "interpretation": "Adding raw identity features reduced Recall@10 by 0.88 percentage points; model headroom does not depend on raw identity memorization.",
+    "fairness_proof": false
+  },
+  "permutation_control": {
+    "evaluation_city": "Yantai",
+    "real_recall_at_10": 0.18366,
+    "runs": 10,
+    "mean_recall_at_10": 0.101157,
+    "sd": 0.012618,
+    "range": [0.081732, 0.120379],
+    "formal_p_value_computed": false
+  },
+  "inference_benchmark": {
+    "target_count": 10050,
+    "latency_p50_seconds": 6.274,
+    "latency_p95_seconds": 6.667,
+    "peak_ram_mib": 180.2,
+    "model_artifact_bytes": 756516,
+    "future_free": true,
+    "forbidden_outcome_fields_fail_closed": true
+  },
+  "golden_replay": {
+    "snapshot_time": "2024-06-22T07:36:00",
+    "new_target_tasks": 134,
+    "active_context_tasks": 388,
+    "default_review_fraction": 0.10,
+    "window_review_tasks": 14,
+    "canonical_product_golden_output_sha256": "f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8",
+    "byte_identical_runs": 3,
+    "evidence_role": "product regression anchor, not historical scientific evidence"
+  },
+  "context_vs_task_only_delta_pp": {
+    "Jilin": 0.31,
+    "Shanghai": 1.23,
+    "Hangzhou": 1.14,
+    "Chongqing": 0.70,
+    "Yantai": 0.42,
+    "interpretation": "Operational context provides modest but consistent additional ranking value over task-only features; this is not evidence of a causal workload effect."
+  },
+  "limitations": [
+    "China-to-Indonesia transfer is unvalidated.",
+    "The combined target is early-heavy.",
+    "review_score is uncalibrated.",
+    "Intervention impact is unmeasured.",
+    "Observational ranking evidence does not prove dispatcher review improves real-world outcomes.",
+    "No independent late-only performance claim is supported.",
+    "Production event-store integration has not been validated in a real logistics operator."
+  ]
+}
