@@ -89,7 +89,8 @@ class KairosTests(unittest.TestCase):
         self.assertEqual(len(result), 134)
         self.assertEqual(sum(x["decision"] == "WINDOW_REVIEW" for x in result), 14)
         self.assertEqual([x["rank"] for x in result], list(range(1, 135)))
-        self.assertTrue({"task_id", "decision", "rank", "risk_score", "evidence_signals"}.issubset(result[0]))
+        self.assertTrue({"task_id", "decision", "rank", "review_score", "evidence_signals"}.issubset(result[0]))
+        self.assertNotIn("risk_score", result[0])
 
     def test_deterministic_inference(self):
         runs = [json.dumps(self.ranker.score(self.snapshot), sort_keys=True) for _ in range(3)]

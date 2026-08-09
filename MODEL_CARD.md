@@ -46,7 +46,7 @@ results do not establish causal intervention benefit.
 ## Limitations
 
 Evidence is retrospective and Chinese; China-to-Indonesia transfer is not
-established. The combined target is early-heavy. The deployment score is an
-uncalibrated ordering score, not a failure probability. Dispatcher-review impact
-has not been measured. Monitor target mix, score drift, review load, and relevant
-group performance before any operational pilot.
+established. The combined target is early-heavy. The deployment `review_score`
+is an uncalibrated ordering score, not a failure probability. Dispatcher-review
+impact has not been measured. Monitor target mix, score drift, review load, and
+relevant group performance before any operational pilot.

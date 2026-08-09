@@ -1,0 +1,54 @@
+{
+  "contract": "KAIROS Operational Review Request to Promise Protection Queue",
+  "version": "1.1.0",
+  "decision_epoch": "target task acceptance time",
+  "input": {
+    "type": "OperationalReviewRequest",
+    "required_fields": [
+      "snapshot_time",
+      "review_budget_fraction",
+      "target_task_ids",
+      "tasks"
+    ],
+    "causal_boundary": "Targets are newly accepted tasks; context is active and known no later than snapshot_time.",
+    "forbidden_information": [
+      "pickup outcomes",
+      "actual pickup timestamps or GPS",
+      "completion outcomes",
+      "violation labels",
+      "post-decision route realization"
+    ]
+  },
+  "output": {
+    "type": "PromiseProtectionQueue",
+    "ordered_by": ["rank ascending", "task_id ascending as deterministic tie-breaker"],
+    "item_fields": {
+      "task_id": "string",
+      "decision": ["WINDOW_REVIEW", "KEEP_ASSIGNMENT"],
+      "rank": "positive integer",
+      "priority": "positive integer equal to rank",
+      "review_score": "finite numeric model ordering score",
+      "evidence_signals": "safe operational signals known at the decision epoch",
+      "explanation_notice": "human-ownership and non-causality notice"
+    }
+  },
+  "review_score_semantics": {
+    "calibrated_probability": false,
+    "allowed_use": "deterministic task ordering",
+    "prohibited_descriptions": ["likelihood", "chance", "confidence", "failure probability"],
+    "prohibited_rendering": "percentage",
+    "prominent_ui_required": false
+  },
+  "ownership": {
+    "model_adapter": "KairosRanker.score",
+    "operational_intervention": "human dispatcher",
+    "ranked_entity": "task, never worker"
+  },
+  "out_of_scope": [
+    "ETA",
+    "routing",
+    "automatic reassignment",
+    "worker performance scoring",
+    "dashboard"
+  ]
+}

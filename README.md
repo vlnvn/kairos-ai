@@ -5,6 +5,11 @@ prospective pickup-window compliance triage**. At a target task's acceptance
 time, it ranks newly accepted pickups and marks the top 10% for `WINDOW_REVIEW`.
 All other tasks receive `KEEP_ASSIGNMENT`. A human dispatcher owns the decision.
 
+The response includes `review_score` solely as an uncalibrated ordering score.
+It is not a probability, percentage, likelihood, confidence, or intervention
+recommendation. Product surfaces should lead with queue rank and decision and may
+omit the raw score.
+
 This repository contains one screen, one JSON scoring endpoint, one CLI, the
 frozen CatBoost artifact, a real public LaDe-P replay snapshot, and standard-library
 tests. It is not an ETA, route optimizer, automatic reassignment system, or claims
@@ -33,4 +38,3 @@ python -m unittest discover -s tests -v
 
 The model requires no future/outcome field. Supplying `pickup_time`, labels,
 completion timestamps, or pickup GPS fields fails closed.
-

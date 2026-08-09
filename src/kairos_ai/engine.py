@@ -189,12 +189,12 @@ class KairosRanker:
             output.append({
                 "task_id": task_id,
                 "decision": "WINDOW_REVIEW" if ranks[i] <= budget else "KEEP_ASSIGNMENT",
-                "rank": ranks[i], "priority": ranks[i], "risk_score": round(float(scores[i]), 10),
+                "rank": ranks[i], "priority": ranks[i], "review_score": round(float(scores[i]), 10),
                 "evidence_signals": [
                     {"signal": "slack_to_end_h", "value": round(float(features.at[i, "slack_to_end_h"]), 3)},
                     {"signal": "pending_other_count", "value": int(features.at[i, "pending_other_count"])},
                     {"signal": "pending_overlap_count", "value": int(features.at[i, "pending_overlap_count"])},
                 ],
-                "explanation_notice": "Non-causal model risk signals; dispatcher owns the decision.",
+                "explanation_notice": "Uncalibrated ordering score with non-causal signals; dispatcher owns the decision.",
             })
         return sorted(output, key=lambda x: x["rank"])
