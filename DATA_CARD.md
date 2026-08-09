@@ -10,11 +10,11 @@ recorded in `artifacts/manifest.json`.
 
 ## Scope and target construction
 
-The audit retained 6,135,893 actionable records across the five cities from
-6,136,147 input rows. An actionable record has valid acceptance, pickup, and
+The audit excluded 254 records with acceptance after the promised end and
+retained 6,135,893 actionable records across the five cities from 6,136,147
+input rows. An actionable record has valid acceptance, pickup, and
 promised-window timestamps, with acceptance no later than pickup and no later
-than the promised-window end. Invalid timestamps/windows and records failing
-those temporal rules are excluded.
+than the promised-window end.
 
 The frozen binary target combines both sides of the promise:
 `pickup_time < promised_start OR pickup_time > promised_end`. Modeling used the
