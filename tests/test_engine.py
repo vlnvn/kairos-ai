@@ -93,6 +93,52 @@ class KairosTests(unittest.TestCase):
         self.assertTrue({"task_id", "decision", "rank", "review_score", "evidence_signals"}.issubset(result[0]))
         self.assertNotIn("risk_score", result[0])
 
+    def test_configurable_capacity_preserves_ranking_and_nests_review_sets(self):
+        results = {}
+        for fraction, expected_reviews in ((0.05, 7), (0.1, 14), (0.2, 27)):
+            snapshot = copy.deepcopy(self.snapshot)
+            snapshot["review_budget_fraction"] = fraction
+            result = self.ranker.score(snapshot)
+            self.assertEqual(
+                sum(item["decision"] == "WINDOW_REVIEW" for item in result),
+                expected_reviews,
+            )
+            results[fraction] = result
+
+        expected_task_order = [item["task_id"] for item in results[0.1]]
+        expected_score_order = [item["review_score"] for item in results[0.1]]
+        for result in results.values():
+            self.assertEqual([item["task_id"] for item in result], expected_task_order)
+            self.assertEqual([item["review_score"] for item in result], expected_score_order)
+
+        review_sets = {
+            fraction: {
+                item["task_id"]
+                for item in result
+                if item["decision"] == "WINDOW_REVIEW"
+            }
+            for fraction, result in results.items()
+        }
+        self.assertLess(review_sets[0.05], review_sets[0.1])
+        self.assertLess(review_sets[0.1], review_sets[0.2])
+
+    def test_review_budget_fraction_rejects_invalid_values(self):
+        invalid_values = (
+            0, -0.1, 1.01, float("nan"), float("inf"), float("-inf"),
+            "0.1", True, False,
+        )
+        for value in invalid_values:
+            with self.subTest(value=value):
+                snapshot = copy.deepcopy(self.snapshot)
+                snapshot["review_budget_fraction"] = value
+                with self.assertRaisesRegex(SnapshotError, "review_budget_fraction"):
+                    self.ranker.score(snapshot)
+
+        full_capacity = copy.deepcopy(self.snapshot)
+        full_capacity["review_budget_fraction"] = 1
+        result = self.ranker.score(full_capacity)
+        self.assertEqual(sum(item["decision"] == "WINDOW_REVIEW" for item in result), 134)
+
     def test_deterministic_inference(self):
         runs = [
             json.dumps(

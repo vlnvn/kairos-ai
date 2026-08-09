@@ -2,8 +2,14 @@
 
 KAIROS is a minimal decision-support vertical slice for **capacity-constrained
 prospective pickup-window compliance triage**. At a target task's acceptance
-time, it ranks newly accepted pickups and marks the top 10% for `WINDOW_REVIEW`.
-All other tasks receive `KEEP_ASSIGNMENT`. A human dispatcher owns the decision.
+time, the dispatcher supplies the current operational snapshot and available
+review capacity. KAIROS ranks the new targets and uses that capacity only to set
+the `WINDOW_REVIEW` cutoff; all remaining tasks receive `KEEP_ASSIGNMENT`. A human
+dispatcher owns the decision.
+
+The competition demo defaults to a 10% review budget, aligned with the frozen
+Recall@10 evidence. Other operational budgets do not imply validated scientific
+performance at those capacities.
 
 The response includes `review_score` solely as an uncalibrated ordering score.
 It is not a probability, percentage, likelihood, confidence, or intervention
@@ -15,7 +21,7 @@ frozen CatBoost artifact, a real public LaDe-P replay snapshot, and standard-lib
 tests. It is not an ETA, route optimizer, automatic reassignment system, or claims
 dashboard.
 
-Quick start with the bundled Codex Python runtime or any Python 3.11+ environment:
+Quick start with any Python 3.11+ environment:
 
 ```powershell
 python -m pip install -e .

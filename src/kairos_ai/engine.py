@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+from numbers import Real
 from pathlib import Path
 
 import numpy as np
@@ -80,8 +81,17 @@ def validate_snapshot(snapshot: dict) -> None:
         raise SnapshotError("snapshot must be an object")
     if set(snapshot) != TOP_FIELDS:
         raise SnapshotError(f"top-level fields must be exactly {sorted(TOP_FIELDS)}")
-    if snapshot["review_budget_fraction"] != 0.1:
-        raise SnapshotError("review_budget_fraction must equal 0.1")
+    review_budget_fraction = snapshot["review_budget_fraction"]
+    if (
+        isinstance(review_budget_fraction, bool)
+        or not isinstance(review_budget_fraction, Real)
+        or not math.isfinite(review_budget_fraction)
+        or not 0 < review_budget_fraction <= 1
+    ):
+        raise SnapshotError(
+            "review_budget_fraction must be a finite number greater than 0 "
+            "and less than or equal to 1"
+        )
     now = parse_timestamp(snapshot["snapshot_time"])
     targets = list(map(str, snapshot["target_task_ids"]))
     if not targets or len(targets) != len(set(targets)):
@@ -183,7 +193,8 @@ class KairosRanker:
         scores = self.model.predict_proba(features)[:, 1]
         order = sorted(range(len(ids)), key=lambda i: (-scores[i], ids[i]))
         ranks = {idx: rank for rank, idx in enumerate(order, 1)}
-        budget = max(1, math.ceil(0.1 * len(ids)))
+        review_budget_fraction = float(snapshot["review_budget_fraction"])
+        budget = max(1, math.ceil(review_budget_fraction * len(ids)))
         output = []
         for i, task_id in enumerate(ids):
             output.append({

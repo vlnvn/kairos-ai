@@ -43,6 +43,10 @@ Across four new-city holdouts, Recall@10 improved over the logistic baseline by
 0.1012 versus 0.1837 for the real Yantai evaluation. These observational ranking
 results do not establish causal intervention benefit.
 
+Recall@10 is the frozen competition evaluation headline. Production may apply a
+different dispatcher-supplied review fraction to the same deterministic ranking,
+but no equivalent performance claim is made for arbitrary capacities.
+
 ## Limitations
 
 Evidence is retrospective and Chinese; China-to-Indonesia transfer is not

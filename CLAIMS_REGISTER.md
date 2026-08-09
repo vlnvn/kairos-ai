@@ -17,6 +17,10 @@ code.
 | Permutation control | 10 exact-pipeline permutations: mean Recall@10 0.1012; real Yantai 0.1837 |
 | Frozen model | 300-tree CatBoost; SHA-256 `b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315` |
 
+Recall@10 remains the frozen scientific headline. Configurable operational review
+capacity changes only the queue cutoff and does not establish validated ranking
+performance at arbitrary capacities.
+
 The locally available approved files do not contain the four individual
 baseline-to-model Recall@10 pairs, the unseen-courier and unseen-AOI baseline/model
 pairs, or the frozen inference resource measurement. Those values must be copied
