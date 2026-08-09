@@ -31,6 +31,7 @@ EXPECTED_FEATURES = [
     "pending_due_before_count", "pending_overlap_count", "oldest_pending_age_h",
     "pending_centroid_distance_km", "pending_location_missing", "region_id", "aoi_type",
 ]
+CANONICAL_PRODUCT_GOLDEN_OUTPUT_SHA256 = "f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8"
 
 
 class KairosTests(unittest.TestCase):
@@ -93,9 +94,26 @@ class KairosTests(unittest.TestCase):
         self.assertNotIn("risk_score", result[0])
 
     def test_deterministic_inference(self):
-        runs = [json.dumps(self.ranker.score(self.snapshot), sort_keys=True) for _ in range(3)]
-        digests = {hashlib.sha256(run.encode()).hexdigest() for run in runs}
-        self.assertEqual(len(digests), 1)
+        runs = [
+            json.dumps(
+                self.ranker.score(self.snapshot),
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+            for _ in range(3)
+        ]
+        self.assertEqual(runs[0], runs[1])
+        self.assertEqual(runs[1], runs[2])
+        self.assertEqual(
+            hashlib.sha256(runs[0]).hexdigest(),
+            CANONICAL_PRODUCT_GOLDEN_OUTPUT_SHA256,
+        )
+        manifest = json.loads((ROOT / "artifacts" / "manifest.json").read_text(encoding="utf-8"))
+        self.assertEqual(
+            manifest["snapshot"]["canonical_product_golden_output_sha256"],
+            CANONICAL_PRODUCT_GOLDEN_OUTPUT_SHA256,
+        )
 
     def test_frozen_model_hash_is_enforced(self):
         model = ROOT / "artifacts" / "kairos_final.cbm"

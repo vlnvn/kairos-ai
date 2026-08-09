@@ -38,6 +38,10 @@
     "source": "pickup_yt.csv",
     "timestamp": "2024-06-22T07:36:00",
     "target_tasks": 134,
-    "active_tasks": 388
+    "active_tasks": 388,
+    "window_review_tasks": 14,
+    "canonical_product_golden_output_sha256": "f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8",
+    "canonical_serialization": "UTF-8 JSON array; sort_keys=true; separators=(',', ':'); ensure_ascii=false; no trailing newline",
+    "regression_anchor_status": "post-lock canonical regression anchor; historical ranked artifact unavailable"
   }
 }
