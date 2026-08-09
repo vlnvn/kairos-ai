@@ -1,0 +1,81 @@
+{
+  "contract": "KAIROS Operational Review Request to Promise Protection Queue",
+  "version": "1.2.0",
+  "decision_epoch": "target task acceptance time",
+  "input": {
+    "type": "OperationalReviewRequest",
+    "required_fields": [
+      "snapshot_time",
+      "review_budget_fraction",
+      "target_task_ids",
+      "tasks"
+    ],
+    "field_contracts": {
+      "review_budget_fraction": {
+        "semantics": "fraction of current target tasks the human team can review",
+        "type": "finite number, excluding boolean",
+        "valid_range": "greater than 0 and less than or equal to 1",
+        "demo_default": 0.1
+      }
+    },
+    "causal_boundary": "Targets are newly accepted tasks; context is active and known no later than snapshot_time.",
+    "forbidden_information": [
+      "pickup outcomes",
+      "actual pickup timestamps or GPS",
+      "completion outcomes",
+      "violation labels",
+      "post-decision route realization"
+    ]
+  },
+  "output": {
+    "type": "PromiseProtectionQueue",
+    "ordered_by": ["rank ascending", "task_id ascending as deterministic tie-breaker"],
+    "review_budget_count_formula": "max(1, ceil(review_budget_fraction * total_targets))",
+    "response_metadata": {
+      "review_budget_fraction": "validated fraction supplied in the request",
+      "review_budget_count": "applied WINDOW_REVIEW cutoff",
+      "total_targets": "number of ranked target tasks"
+    },
+    "item_fields": {
+      "task_id": "string",
+      "decision": ["WINDOW_REVIEW", "KEEP_ASSIGNMENT"],
+      "rank": "positive integer",
+      "priority": "positive integer equal to rank",
+      "review_score": "finite numeric model ordering score",
+      "evidence_signals": "safe operational signals known at the decision epoch",
+      "explanation_notice": "human-ownership and non-causality notice"
+    }
+  },
+  "review_score_semantics": {
+    "calibrated_probability": false,
+    "allowed_use": "deterministic task ordering",
+    "prohibited_descriptions": ["likelihood", "chance", "confidence", "failure probability"],
+    "prohibited_rendering": "percentage",
+    "prominent_ui_required": false
+  },
+  "ownership": {
+    "model_adapter": "KairosRanker.score",
+    "operational_intervention": "human dispatcher",
+    "ranked_entity": "task, never worker"
+  },
+  "integration_handoff": {
+    "backend": [
+      "preserve review_budget_fraction from the validated request",
+      "expose review_budget_fraction, review_budget_count, and total_targets in response metadata",
+      "never convert review_score to a percentage"
+    ],
+    "frontend": [
+      "allow the dispatcher to select available review capacity",
+      "default the competition demo to 0.10",
+      "lead with rank and decision",
+      "hide review_score or show it only as a secondary raw ordering score, never a percentage"
+    ]
+  },
+  "out_of_scope": [
+    "ETA",
+    "routing",
+    "automatic reassignment",
+    "worker performance scoring",
+    "dashboard"
+  ]
+}
