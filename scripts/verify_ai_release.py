@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from kairos_ai.engine import (  # noqa: E402
     EXPECTED_MODEL_SHA256,
     FEATURES,
+    FROZEN_CATEGORICAL_FEATURE_INDICES,
     KairosRanker,
     SnapshotError,
 )
@@ -40,7 +41,10 @@ def main() -> int:
 
         ranker = KairosRanker(model_path)
         checks["model_features"] = ranker.model.feature_names_ == FEATURES
-        checks["categorical_indices"] = ranker.model.get_cat_feature_indices() == [19, 20]
+        checks["categorical_indices"] = (
+            tuple(ranker.model.get_cat_feature_indices())
+            == FROZEN_CATEGORICAL_FEATURE_INDICES
+        )
 
         first = ranker.score(snapshot)
         second = ranker.score(snapshot)

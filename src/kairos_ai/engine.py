@@ -20,6 +20,7 @@ FEATURES = [
 ]
 FROZEN_FEATURES = tuple(FEATURES)
 FROZEN_CATEGORICAL_FEATURE_INDICES = (19, 20)
+COUNTER_FIELDS = ("prior_courier_accepts_day", "prior_aoi_accepts_day")
 EXPECTED_MODEL_SHA256 = "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315"
 FUTURE_FIELDS = {
     "actual_duration", "actual_pickup_at", "actual_pickup_timestamp",
@@ -59,11 +60,12 @@ def verify_model_artifact(model_path: str | Path) -> Path:
 
 
 def parse_timestamp(value) -> pd.Timestamp:
+    """Parse a request timestamp into the engine's timezone-naive UTC form."""
     if not isinstance(value, str) or not value.strip():
         raise SnapshotError("timestamp must be a nonempty string")
     try:
         parsed = pd.Timestamp(value)
-    except Exception as exc:
+    except (OverflowError, TypeError, ValueError) as exc:
         raise SnapshotError(f"invalid timestamp: {value}") from exc
     if pd.isna(parsed):
         raise SnapshotError(f"invalid timestamp: {value}")
@@ -123,13 +125,14 @@ def _validate_counter(value, field: str) -> None:
 def _validate_finite_duration(later: pd.Timestamp, earlier: pd.Timestamp) -> None:
     try:
         seconds = (later - earlier).total_seconds()
-    except Exception as exc:
+    except (OverflowError, TypeError, ValueError) as exc:
         raise SnapshotError("timestamp range is not supported") from exc
     if not math.isfinite(seconds):
         raise SnapshotError("timestamp range is not supported")
 
 
 def haversine(lon1, lat1, lon2, lat2):
+    """Return the great-circle distance in kilometers for finite coordinates."""
     if not all(np.isfinite([lon1, lat1, lon2, lat2])):
         return np.nan
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
@@ -138,6 +141,7 @@ def haversine(lon1, lat1, lon2, lat2):
 
 
 def validate_snapshot(snapshot: dict) -> None:
+    """Validate an Operational Review Request or raise ``SnapshotError``."""
     if not isinstance(snapshot, dict):
         raise SnapshotError("snapshot must be an object")
     if set(snapshot) != TOP_FIELDS:
@@ -182,7 +186,8 @@ def validate_snapshot(snapshot: dict) -> None:
         key = _normalize_identifier(task["task_id"], "task_id")
         if key in seen:
             raise SnapshotError(f"duplicate task_id: {key}")
-        seen.add(key); tasks[key] = task
+        seen.add(key)
+        tasks[key] = task
         for field in ("courier_key", "region_id", "aoi_key", "aoi_type"):
             _normalize_identifier(task[field], field)
         accepted = parse_timestamp(task["accepted_at"])
@@ -198,7 +203,7 @@ def validate_snapshot(snapshot: dict) -> None:
         _validate_finite_duration(end, start)
         _validate_coordinate_pair(task, "lng", "lat")
         _validate_coordinate_pair(task, "accept_gps_lng", "accept_gps_lat")
-        for name in ("prior_courier_accepts_day", "prior_aoi_accepts_day"):
+        for name in COUNTER_FIELDS:
             if name in task and task[name] is not None:
                 _validate_counter(task[name], name)
     if not set(targets).issubset(seen):
@@ -207,7 +212,7 @@ def validate_snapshot(snapshot: dict) -> None:
         task = tasks[key]
         if parse_timestamp(task["accepted_at"]) != now:
             raise SnapshotError(f"target {key} must be scored at acceptance")
-        for name in ["prior_courier_accepts_day", "prior_aoi_accepts_day"]:
+        for name in COUNTER_FIELDS:
             if task.get(name) is None:
                 raise SnapshotError(f"target {key} requires nonnegative {name}")
 
@@ -222,6 +227,7 @@ def _verify_loaded_model_contract(model: CatBoostClassifier) -> None:
 
 
 def build_features(snapshot: dict) -> tuple[pd.DataFrame, list[str]]:
+    """Build the frozen feature frame and normalized target task IDs."""
     validate_snapshot(snapshot)
     now = parse_timestamp(snapshot["snapshot_time"])
     by_id = {str(x["task_id"]): x for x in snapshot["tasks"]}
@@ -258,7 +264,8 @@ def build_features(snapshot: dict) -> tuple[pd.DataFrame, list[str]]:
             "oldest_pending_age_h": max([(now-parse_timestamp(x["accepted_at"])).total_seconds()/3600 for x in others], default=0.0),
             "pending_centroid_distance_km": centroid_distance, "pending_location_missing": location_missing,
             "region_id": str(task["region_id"]), "aoi_type": str(task["aoi_type"]),
-        }); ids.append(task_id)
+        })
+        ids.append(task_id)
     return pd.DataFrame(rows, columns=FEATURES), ids
 
 
