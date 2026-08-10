@@ -1,0 +1,93 @@
+{
+  "report": "KAIROS frozen inference reliability",
+  "model_sha256": "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315",
+  "canonical_golden_output_sha256": "f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8",
+  "feature_count": 21,
+  "test_count": {
+    "original": 11,
+    "new": 18,
+    "total": 29
+  },
+  "robustness_categories": [
+    "top-level request schema",
+    "task schema and state",
+    "timestamp and temporal boundary",
+    "finite numeric and geospatial range",
+    "metamorphic ordering invariance",
+    "future-data rejection",
+    "model and feature-schema integrity",
+    "valid edge requests",
+    "output and capacity integrity"
+  ],
+  "performance": {
+    "purpose": "software-only deterministic request-structure characterization; no labels or scientific metrics",
+    "environment": "local Windows process using the repository's frozen CatBoost artifact",
+    "request_structure": "canonical-schema targets with deterministic unique task and courier identifiers",
+    "units": "seconds",
+    "feature_build_measurement": "build_features elapsed time minus paired standalone validation elapsed time",
+    "pre_hardening_baseline": {
+      "100": {
+        "request_bytes": 38498,
+        "repetitions": 7,
+        "validation": {"p50": 0.000732, "p95": 0.001321},
+        "feature_build_including_validation": {"p50": 0.002653, "p95": 0.004505},
+        "model_inference": {"p50": 0.001036, "p95": 0.001434},
+        "output_assembly": {"p50": 0.002829, "p95": 0.004240},
+        "end_to_end": {"p50": 0.006285, "p95": 0.009855}
+      },
+      "1000": {
+        "request_bytes": 384098,
+        "repetitions": 7,
+        "validation": {"p50": 0.007309, "p95": 0.007396},
+        "feature_build_including_validation": {"p50": 0.021113, "p95": 0.021610},
+        "model_inference": {"p50": 0.001998, "p95": 0.002269},
+        "output_assembly": {"p50": 0.027336, "p95": 0.037740},
+        "end_to_end": {"p50": 0.053547, "p95": 0.065062}
+      },
+      "10000": {
+        "request_bytes": 3840098,
+        "repetitions": 3,
+        "validation": {"p50": 0.072037, "p95": 0.072731},
+        "feature_build_including_validation": {"p50": 0.224358, "p95": 0.225458},
+        "model_inference": {"p50": 0.008444, "p95": 0.008692},
+        "output_assembly": {"p50": 0.295329, "p95": 0.339224},
+        "end_to_end": {"p50": 0.541791, "p95": 0.546276}
+      }
+    },
+    "final_hardened_boundary": {
+      "100": {
+        "request_bytes": 38498,
+        "repetitions": 7,
+        "validation": {"p50": 0.001591, "p95": 0.001607},
+        "feature_build": {"p50": 0.001649, "p95": 0.001756},
+        "model_inference": {"p50": 0.000852, "p95": 0.000922},
+        "output_assembly": {"p50": 0.002744, "p95": 0.002819},
+        "end_to_end": {"p50": 0.006907, "p95": 0.006952}
+      },
+      "1000": {
+        "request_bytes": 384098,
+        "repetitions": 7,
+        "validation": {"p50": 0.015374, "p95": 0.015719},
+        "feature_build": {"p50": 0.013386, "p95": 0.019268},
+        "model_inference": {"p50": 0.001938, "p95": 0.002106},
+        "output_assembly": {"p50": 0.026122, "p95": 0.036670},
+        "end_to_end": {"p50": 0.057099, "p95": 0.058964}
+      },
+      "10000": {
+        "request_bytes": 3840098,
+        "repetitions": 5,
+        "validation": {"p50": 0.155092, "p95": 0.162876},
+        "feature_build": {"p50": 0.134966, "p95": 0.162805},
+        "model_inference": {"p50": 0.008129, "p95": 0.008390},
+        "output_assembly": {"p50": 0.281168, "p95": 0.337258},
+        "end_to_end": {"p50": 0.600958, "p95": 0.638196},
+        "peak_rss_bytes": 127733760
+      }
+    },
+    "retained_optimization": null,
+    "optimization_decision": "No production optimization retained; profiling did not justify behavior-risking changes."
+  },
+  "release_check": "PASS",
+  "predictive_model_changed": false,
+  "prediction_contract_changed": false
+}
