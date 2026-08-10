@@ -18,6 +18,8 @@ FEATURES = [
     "pending_due_before_count", "pending_overlap_count", "oldest_pending_age_h",
     "pending_centroid_distance_km", "pending_location_missing", "region_id", "aoi_type",
 ]
+FROZEN_FEATURES = tuple(FEATURES)
+FROZEN_CATEGORICAL_FEATURE_INDICES = (19, 20)
 EXPECTED_MODEL_SHA256 = "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315"
 FUTURE_FIELDS = {
     "actual_duration", "actual_pickup_at", "actual_pickup_timestamp",
@@ -57,6 +59,8 @@ def verify_model_artifact(model_path: str | Path) -> Path:
 
 
 def parse_timestamp(value) -> pd.Timestamp:
+    if not isinstance(value, str) or not value.strip():
+        raise SnapshotError("timestamp must be a nonempty string")
     try:
         parsed = pd.Timestamp(value)
     except Exception as exc:
@@ -66,6 +70,63 @@ def parse_timestamp(value) -> pd.Timestamp:
     if parsed.tzinfo is not None:
         parsed = parsed.tz_convert("UTC").tz_localize(None)
     return parsed
+
+
+def _is_finite_real(value) -> bool:
+    if isinstance(value, bool) or not isinstance(value, Real):
+        return False
+    try:
+        return math.isfinite(value)
+    except (OverflowError, TypeError, ValueError):
+        return False
+
+
+def _normalize_identifier(value, field: str) -> str:
+    if (
+        value is None
+        or isinstance(value, (bool, dict, list, tuple, set))
+        or (isinstance(value, Real) and not _is_finite_real(value))
+    ):
+        raise SnapshotError(f"{field} must be a nonempty string or finite number")
+    normalized = str(value)
+    if not normalized.strip():
+        raise SnapshotError(f"{field} must be a nonempty string or finite number")
+    return normalized
+
+
+def _finite_number(value, field: str) -> float:
+    if not _is_finite_real(value):
+        raise SnapshotError(f"{field} must be a finite number")
+    return float(value)
+
+
+def _validate_coordinate_pair(task: dict, lon_field: str, lat_field: str) -> None:
+    lon, lat = task.get(lon_field), task.get(lat_field)
+    if lon is None and lat is None:
+        return
+    if lon is None or lat is None:
+        raise SnapshotError(f"{lon_field} and {lat_field} must both be null or numeric")
+    lon_value = _finite_number(lon, lon_field)
+    lat_value = _finite_number(lat, lat_field)
+    if not -180 <= lon_value <= 180:
+        raise SnapshotError(f"{lon_field} must be between -180 and 180")
+    if not -90 <= lat_value <= 90:
+        raise SnapshotError(f"{lat_field} must be between -90 and 90")
+
+
+def _validate_counter(value, field: str) -> None:
+    number = _finite_number(value, field)
+    if number < 0 or not number.is_integer():
+        raise SnapshotError(f"{field} must be a nonnegative integer")
+
+
+def _validate_finite_duration(later: pd.Timestamp, earlier: pd.Timestamp) -> None:
+    try:
+        seconds = (later - earlier).total_seconds()
+    except Exception as exc:
+        raise SnapshotError("timestamp range is not supported") from exc
+    if not math.isfinite(seconds):
+        raise SnapshotError("timestamp range is not supported")
 
 
 def haversine(lon1, lat1, lon2, lat2):
@@ -83,9 +144,7 @@ def validate_snapshot(snapshot: dict) -> None:
         raise SnapshotError(f"top-level fields must be exactly {sorted(TOP_FIELDS)}")
     review_budget_fraction = snapshot["review_budget_fraction"]
     if (
-        isinstance(review_budget_fraction, bool)
-        or not isinstance(review_budget_fraction, Real)
-        or not math.isfinite(review_budget_fraction)
+        not _is_finite_real(review_budget_fraction)
         or not 0 < review_budget_fraction <= 1
     ):
         raise SnapshotError(
@@ -93,24 +152,39 @@ def validate_snapshot(snapshot: dict) -> None:
             "and less than or equal to 1"
         )
     now = parse_timestamp(snapshot["snapshot_time"])
-    targets = list(map(str, snapshot["target_task_ids"]))
+    target_values = snapshot["target_task_ids"]
+    if not isinstance(target_values, list):
+        raise SnapshotError("target_task_ids must be an array")
+    targets = [
+        _normalize_identifier(value, "target_task_ids item")
+        for value in target_values
+    ]
     if not targets or len(targets) != len(set(targets)):
         raise SnapshotError("target_task_ids must be nonempty and unique")
+    task_values = snapshot["tasks"]
+    if not isinstance(task_values, list) or not task_values:
+        raise SnapshotError("tasks must be a nonempty array")
     seen, tasks = set(), {}
-    for task in snapshot["tasks"]:
+    for task in task_values:
+        if not isinstance(task, dict):
+            raise SnapshotError("each task must be an object")
         future = set(task) & FUTURE_FIELDS
         if future:
-            raise SnapshotError(f"forbidden future/outcome fields: {sorted(future)}")
+            raise SnapshotError(
+                f"forbidden future/outcome fields: {sorted(map(str, future))}"
+            )
         unknown = set(task) - TASK_FIELDS
         if unknown:
-            raise SnapshotError(f"unknown task fields: {sorted(unknown)}")
+            raise SnapshotError(f"unknown task fields: {sorted(map(str, unknown))}")
         missing = REQUIRED_TASK - set(task)
         if missing:
             raise SnapshotError(f"missing task fields: {sorted(missing)}")
-        key = str(task["task_id"])
+        key = _normalize_identifier(task["task_id"], "task_id")
         if key in seen:
             raise SnapshotError(f"duplicate task_id: {key}")
         seen.add(key); tasks[key] = task
+        for field in ("courier_key", "region_id", "aoi_key", "aoi_type"):
+            _normalize_identifier(task[field], field)
         accepted = parse_timestamp(task["accepted_at"])
         start, end = parse_timestamp(task["window_start"]), parse_timestamp(task["window_end"])
         if accepted > now:
@@ -119,6 +193,14 @@ def validate_snapshot(snapshot: dict) -> None:
             raise SnapshotError(f"task {key} has invalid/actionably expired window")
         if task["is_pending"] is not True:
             raise SnapshotError(f"task {key} is not pending")
+        _validate_finite_duration(now, accepted)
+        _validate_finite_duration(start, accepted)
+        _validate_finite_duration(end, start)
+        _validate_coordinate_pair(task, "lng", "lat")
+        _validate_coordinate_pair(task, "accept_gps_lng", "accept_gps_lat")
+        for name in ("prior_courier_accepts_day", "prior_aoi_accepts_day"):
+            if name in task and task[name] is not None:
+                _validate_counter(task[name], name)
     if not set(targets).issubset(seen):
         raise SnapshotError("target_task_ids must exist in tasks")
     for key in targets:
@@ -126,8 +208,17 @@ def validate_snapshot(snapshot: dict) -> None:
         if parse_timestamp(task["accepted_at"]) != now:
             raise SnapshotError(f"target {key} must be scored at acceptance")
         for name in ["prior_courier_accepts_day", "prior_aoi_accepts_day"]:
-            if task.get(name) is None or int(task[name]) < 0:
+            if task.get(name) is None:
                 raise SnapshotError(f"target {key} requires nonnegative {name}")
+
+
+def _verify_loaded_model_contract(model: CatBoostClassifier) -> None:
+    if tuple(FEATURES) != FROZEN_FEATURES:
+        raise ModelArtifactError("frozen feature contract mismatch")
+    if tuple(model.feature_names_) != FROZEN_FEATURES:
+        raise ModelArtifactError("model feature contract mismatch")
+    if tuple(model.get_cat_feature_indices()) != FROZEN_CATEGORICAL_FEATURE_INDICES:
+        raise ModelArtifactError("model categorical feature contract mismatch")
 
 
 def build_features(snapshot: dict) -> tuple[pd.DataFrame, list[str]]:
@@ -186,11 +277,21 @@ class KairosRanker:
     def __init__(self, model_path: str | Path):
         self.model_path = verify_model_artifact(model_path)
         self.model = CatBoostClassifier()
-        self.model.load_model(str(self.model_path))
+        try:
+            self.model.load_model(str(self.model_path))
+        except Exception as exc:
+            raise ModelArtifactError("model artifact could not be loaded") from exc
+        _verify_loaded_model_contract(self.model)
 
     def score(self, snapshot: dict) -> list[dict]:
+        _verify_loaded_model_contract(self.model)
         features, ids = build_features(snapshot)
-        scores = self.model.predict_proba(features)[:, 1]
+        try:
+            scores = self.model.predict_proba(features)[:, 1]
+        except Exception as exc:
+            raise ModelArtifactError("model scoring failed") from exc
+        if len(scores) != len(ids) or not np.isfinite(scores).all():
+            raise ModelArtifactError("model produced invalid scores")
         order = sorted(range(len(ids)), key=lambda i: (-scores[i], ids[i]))
         ranks = {idx: rank for rank, idx in enumerate(order, 1)}
         review_budget_fraction = float(snapshot["review_budget_fraction"])
