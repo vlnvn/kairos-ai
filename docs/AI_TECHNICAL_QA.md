@@ -178,3 +178,57 @@ The defensible contribution is the integration of a future-free, capacity-aware
 ranking contract with human-owned promise-protection review and its frozen
 evaluation. KAIROS does not claim CatBoost, delivery prediction, or task ranking
 is world-first or absolutely novel.
+
+## M. Research closure and release governance
+
+### 26. Why did model-family research stop?
+
+The bounded V2 search found no challenger that cleared its preregistered development gate over the CatBoost classifier control. Later safe-feature and HPO searches also failed their promotion gates. Continuing would increase adaptive-search risk without material approved headroom.
+
+### 27. What challengers were tested in V2?
+
+The bounded archive includes logistic controls, CatBoost direct rankers using YetiRankPairwise and LambdaMart-style ranking, and CPU DeepSets fallbacks. A PairLogitPairwise attempt failed technically before producing a metric; full set attention was not run without CUDA.
+
+### 28. Why was LambdaMart rejected?
+
+It was the strongest V2 challenger but reached validation Recall@10 0.192089 versus 0.198406 for the CatBoost classifier control, a -0.632 pp delta. It therefore failed the mandatory +1.50 pp development gate.
+
+### 29. Why was DeepSets rejected?
+
+The stronger DeepSets fallback reached 0.175337 Recall@10, 2.307 pp below the CatBoost control. It added complexity without improved evidence.
+
+### 30. Why were richer safe features rejected?
+
+V2.1's best safe feature set improved INNER_DEV by only +0.325 pp. That was below the preregistered material-headroom gate, so promotion validation and final remained closed.
+
+### 31. Why was HPO candidate C23 not promoted despite improving every fold and city?
+
+C23 improved aggregate rolling-development Recall@10 by +0.495269 pp, but the preregistered requirement was at least +0.75 pp. Consistency cannot replace the mandatory magnitude gate.
+
+### 32. What is the difference between V1 and V2 evidence?
+
+V1 is historical frozen evidence attached to the production binary. V2 is a later clean chronological benchmark for fresh reproductions of fixed recipes. Their numbers come from different experimental designs and must not be mixed.
+
+### 33. Why is V2 not claimed as production-artifact performance?
+
+The existing V1 binary has historical training-membership uncertainty relative to V2. Evaluating it on V2 FINAL could violate independence. V2 therefore trains fresh fixed-recipe reproductions and makes only recipe/contract claims.
+
+### 34. Why is `review_score` intentionally uncalibrated?
+
+The product needs stable ordering under finite capacity, which Recall@10 evaluates directly. Calibration was not required or validated; representing the score as probability would add an unsupported semantic claim.
+
+### 35. What would require future retraining?
+
+Retraining would require a separately approved protocol based on evidence such as sustained labeled performance degradation, a changed target or decision epoch, a necessary feature-contract change, or validated domain transfer. Input drift alone triggers investigation, not automatic retraining.
+
+### 36. What should be monitored after deployment?
+
+Monitor input rejection categories, optional-GPS missingness, categorical novelty, request/context/capacity distributions, integrity failures, latency, and descriptive score statistics. Predictive performance requires delayed outcome labels and strict event-time joins.
+
+### 37. How would input drift be detected?
+
+Compare monitored input and score distributions with an approved operator baseline. Thresholds are `BASELINE_REQUIRED` until real shadow or pilot traffic exists; synthetic repository data cannot define deployment alerts.
+
+### 38. What happens if the model binary is corrupted?
+
+SHA-256 verification fails before loading or scoring and raises `ModelArtifactError`. The consumer must fail closed and restore the approved artifact rather than bypassing integrity checks.

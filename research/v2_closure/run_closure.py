@@ -292,6 +292,8 @@ def main() -> None:
     parser.add_argument("--validation-results", type=Path)
     args = parser.parse_args()
     verify_preregistration(args.preregistration)
+    if args.output.exists():
+        raise RuntimeError(f"refusing to reopen one-shot result: {args.output}")
     if args.phase == "validation":
         run_validation(args.processed_root, args.output)
     else:

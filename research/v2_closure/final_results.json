@@ -1,0 +1,108 @@
+{
+  "phase": "V2_FINAL_ONE_SHOT_CHARACTERIZATION",
+  "preregistration_sha256": "4737d10d38c70c7a26a9e4692a0c63900513fa4f3ab39704fdaf216490b01f41",
+  "parameters_changed_after_validation": false,
+  "training": {
+    "training_rows": 1504144,
+    "logistic_seconds": 92.18668440000329,
+    "catboost_seconds": 93.36426669999491
+  },
+  "B0_logistic": {
+    "task_count": 1009739,
+    "positive_count": 265363,
+    "target_prevalence": 0.26280355616649453,
+    "pr_auc": 0.3786133483323396,
+    "recall_at_5": 0.09801667903965511,
+    "review_count_5": 54217,
+    "recall_at_10": 0.1718438516296545,
+    "review_count_10": 104491,
+    "recall_at_20": 0.302408399060909,
+    "review_count_20": 205018,
+    "city_recall_at_10": {
+      "Chongqing": 0.21115775413824356,
+      "Hangzhou": 0.17291245340025826,
+      "Jilin": 0.20392059141124677,
+      "Shanghai": 0.157420290713165,
+      "Yantai": 0.15325949674536093
+    },
+    "early_diagnostic": {
+      "recall_at_10": 0.17625076420407387,
+      "captured": 43532,
+      "positives": 246989
+    },
+    "late_diagnostic": {
+      "recall_at_10": 0.11260476760640035,
+      "captured": 2069,
+      "positives": 18374
+    }
+  },
+  "B1_catboost_recipe_control": {
+    "task_count": 1009739,
+    "positive_count": 265363,
+    "target_prevalence": 0.26280355616649453,
+    "pr_auc": 0.5063630920500501,
+    "recall_at_5": 0.12452376555887595,
+    "review_count_5": 54217,
+    "recall_at_10": 0.21586656768275908,
+    "review_count_10": 104491,
+    "recall_at_20": 0.3753876765035065,
+    "review_count_20": 205018,
+    "city_recall_at_10": {
+      "Chongqing": 0.25974335734389165,
+      "Hangzhou": 0.2226553933871007,
+      "Jilin": 0.24437245618406844,
+      "Shanghai": 0.20077562982918382,
+      "Yantai": 0.18800803134816543
+    },
+    "early_diagnostic": {
+      "recall_at_10": 0.22289251748053557,
+      "captured": 55052,
+      "positives": 246989
+    },
+    "late_diagnostic": {
+      "recall_at_10": 0.12142157396320888,
+      "captured": 2231,
+      "positives": 18374
+    }
+  },
+  "catboost_minus_logistic_recall_at_10_pp": 4.402271605310459,
+  "paired_bootstrap": {
+    "unit": "source_date",
+    "date_count": 27,
+    "replicates": 2000,
+    "seed": 20260810,
+    "delta_pp_95_ci": [
+      4.058176780057037,
+      4.7336748782579585
+    ]
+  },
+  "unseen_entities": {
+    "definition": "entity absent from combined TRAIN plus VALIDATION fitting rows",
+    "B0_logistic": {
+      "unseen_courier": {
+        "recall_at_10": 0.1575199203187251,
+        "captured": 3163,
+        "positives": 20080
+      },
+      "unseen_aoi": {
+        "recall_at_10": 0.21978021978021978,
+        "captured": 100,
+        "positives": 455
+      }
+    },
+    "B1_catboost_recipe_control": {
+      "unseen_courier": {
+        "recall_at_10": 0.21314741035856574,
+        "captured": 4280,
+        "positives": 20080
+      },
+      "unseen_aoi": {
+        "recall_at_10": 0.26373626373626374,
+        "captured": 120,
+        "positives": 455
+      }
+    },
+    "unseen_courier_task_count": 70662,
+    "unseen_aoi_task_count": 1690
+  }
+}
