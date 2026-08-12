@@ -212,7 +212,11 @@ def write_once(path: Path, payload: dict) -> None:
     if path.exists():
         raise RuntimeError(f"refusing to overwrite one-shot result: {path}")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 def run_validation(processed_root: Path, output: Path) -> None:
