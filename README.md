@@ -51,25 +51,7 @@ Load `examples/input_snapshot.json` in the product. It contains 134 target tasks
 
 ## API
 
-`POST /score` accepts `application/json` up to 8 MiB. A minimal request has this shape:
-
-```json
-{
-  "snapshot_time": "2024-06-22T07:36:00",
-  "review_budget_fraction": 0.1,
-  "target_task_ids": ["4471808"],
-  "tasks": [
-    {
-      "task_id": "4471808",
-      "accepted_at": "2024-06-22T07:36:00",
-      "window_start": "2024-06-23T17:00:00",
-      "window_end": "2024-06-23T19:00:00"
-    }
-  ]
-}
-```
-
-The complete task schema is represented by the bundled snapshot. A successful response is ordered by rank:
+`POST /score` accepts `application/json` up to 8 MiB. The executable reference request is [`examples/input_snapshot.json`](examples/input_snapshot.json); it contains the complete task schema and top-level request envelope required by the frozen engine. A successful response is ordered by rank:
 
 ```json
 {
