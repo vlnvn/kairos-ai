@@ -3,13 +3,102 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>KAIROS Window Review</title>
+  <meta name="color-scheme" content="light">
+  <title>KAIROS · Promise Protection Queue</title>
   <link rel="stylesheet" href="/styles.css">
 </head>
-<body><main>
-  <header><div><div class="eyebrow">Dispatcher decision support</div><h1>KAIROS Window Review</h1><div class="sub">Prioritize newly accepted pickup tasks at risk of an early or late promised-window breach. KAIROS allocates attention; the dispatcher owns every action.</div></div>
-    <div class="bar"><label class="file" for="file">Load snapshot</label><input id="file" type="file" accept=".json"><button id="run" disabled>Run KAIROS</button><span class="status" id="status">Choose examples/input_snapshot.json</span></div></header>
-  <section class="stats"><div class="stat"><b id="active">—</b><span>Active tasks</span></div><div class="stat"><b id="targets">—</b><span>New targets</span></div><div class="stat"><b id="budget">10%</b><span>Review budget</span></div><div class="stat"><b id="reviews">—</b><span>Window reviews</span></div></section>
-  <section class="layout"><div class="panel"><h2>Priority queue</h2><div id="table" class="empty">Load a realistic dispatcher snapshot to begin.</div></div>
-  <aside class="panel"><h2>Task inspection</h2><div id="detail" class="detail"><p class="sub">Select a scored task to inspect its decision and known operational context.</p></div></aside></section>
-</main><script src="/app.js"></script></body></html>
+<body>
+  <a class="skip-link" href="#queue-heading">Skip to queue</a>
+  <main class="shell">
+    <header class="masthead">
+      <div class="brand-lockup">
+        <div class="brand-mark" aria-hidden="true">K</div>
+        <div>
+          <p class="brand">KAIROS</p>
+          <p class="tagline">Protect the promise before it breaks.</p>
+        </div>
+      </div>
+      <div class="ownership"><span aria-hidden="true">●</span> Human decision owner</div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="kicker">Dispatcher decision support</p>
+        <h1 id="page-title">Promise Protection Queue</h1>
+        <p class="lede">Rank newly accepted pickup promises so the dispatch team can focus limited review capacity where it matters first.</p>
+      </div>
+      <p class="scope-note"><strong>Decision boundary</strong><br>KAIROS orders attention. It never reassigns a task or scores a worker.</p>
+    </section>
+
+    <section class="control-strip" aria-labelledby="input-heading">
+      <div class="control-heading">
+        <p class="step">01 · Operational input</p>
+        <h2 id="input-heading">Load the current snapshot</h2>
+      </div>
+      <div class="control file-control">
+        <label for="snapshot-file">Snapshot JSON</label>
+        <input id="snapshot-file" type="file" accept="application/json,.json">
+        <span id="file-name" class="control-hint">No file selected</span>
+      </div>
+      <div class="control capacity-control">
+        <label for="capacity">Available review capacity</label>
+        <select id="capacity">
+          <option value="0.05">5% · constrained</option>
+          <option value="0.1" selected>10% · demo default</option>
+          <option value="0.2">20% · expanded</option>
+          <option value="1">100% · full review</option>
+        </select>
+        <span class="control-hint">10% is the evidence-aligned competition default; other settings are operational controls.</span>
+      </div>
+      <button id="run" class="primary-action" type="button" disabled>
+        <span>Protect Promises</span><span aria-hidden="true">→</span>
+      </button>
+    </section>
+
+    <div id="status" class="status-line" role="status" aria-live="polite">
+      <span class="status-indicator" aria-hidden="true"></span>
+      <span id="status-text">Load a valid snapshot to begin.</span>
+    </div>
+
+    <section id="results" class="workspace" aria-labelledby="queue-heading" hidden>
+      <div class="summary-band">
+        <p id="summary" class="summary"></p>
+        <p id="summary-meta" class="summary-meta"></p>
+      </div>
+
+      <div class="workspace-grid">
+        <section class="queue-panel" aria-labelledby="queue-heading">
+          <div class="panel-heading">
+            <div>
+              <p class="step">02 · Ranked attention</p>
+              <h2 id="queue-heading">Promise Protection Queue</h2>
+            </div>
+            <div class="filter-group" aria-label="Queue filter">
+              <button id="filter-review" class="filter-button" type="button" aria-pressed="true">Needs review</button>
+              <button id="filter-all" class="filter-button" type="button" aria-pressed="false">All tasks</button>
+            </div>
+          </div>
+          <div class="queue-columns" aria-hidden="true">
+            <span>Rank / task</span><span>Promised window</span><span>Decision</span>
+          </div>
+          <div id="queue" class="queue-list"></div>
+          <p id="queue-empty" class="empty-message" hidden>No promises currently require priority review at this capacity.</p>
+        </section>
+
+        <aside class="detail-panel" aria-labelledby="detail-heading">
+          <div class="panel-heading detail-heading">
+            <div>
+              <p class="step">03 · Human review</p>
+              <h2 id="detail-heading">Task Review</h2>
+            </div>
+          </div>
+          <div id="detail" class="detail-body">
+            <p class="empty-message">Select a ranked promise to inspect known operational context.</p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
