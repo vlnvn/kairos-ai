@@ -35,5 +35,5 @@ jobs:
         run: python -m compileall -q src scripts tests
       - name: Parse tracked JSON
         run: python -c "import json, pathlib; [json.loads(path.read_text(encoding='utf-8')) for path in pathlib.Path('.').rglob('*.json') if '.git' not in path.parts]"
-      - name: Build local-demo image
-        run: docker build --tag kairos:ci .
+      - name: Build local-demo service
+        run: docker compose build
