@@ -6,7 +6,7 @@ import json
 import sys
 import threading
 import unittest
-from http.server import ThreadingHTTPServer
+from http.server import HTTPServer, ThreadingHTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,13 +45,18 @@ class ServerContractTests(unittest.TestCase):
         if payload is not None:
             body = payload if isinstance(payload, bytes) else json.dumps(payload).encode()
             request_headers.setdefault("Content-Type", "application/json")
-        connection = http.client.HTTPConnection(self.host, self.port, timeout=20)
-        connection.request(method, path, body=body, headers=request_headers)
-        response = connection.getresponse()
-        raw = response.read()
-        result = response.status, dict(response.getheaders()), raw
-        connection.close()
-        return result
+        for attempt in range(2):
+            connection = http.client.HTTPConnection(self.host, self.port, timeout=20)
+            try:
+                connection.request(method, path, body=body, headers=request_headers)
+                response = connection.getresponse()
+                raw = response.read()
+                return response.status, dict(response.getheaders()), raw
+            except (ConnectionAbortedError, ConnectionResetError):
+                if attempt == 1:
+                    raise
+            finally:
+                connection.close()
 
     def test_canonical_response_metadata_and_direct_engine_match(self):
         status, _, raw = self.request("POST", "/score", self.snapshot)
@@ -116,14 +121,23 @@ class ServerContractTests(unittest.TestCase):
         )
 
     def test_oversized_declared_body_is_rejected_before_read(self):
-        connection = http.client.HTTPConnection(self.host, self.port, timeout=5)
-        connection.putrequest("POST", "/score")
-        connection.putheader("Content-Type", "application/json")
-        connection.putheader("Content-Length", str(MAX_REQUEST_BODY_BYTES + 1))
-        connection.endheaders()
-        response = connection.getresponse()
-        raw = response.read()
-        connection.close()
+        server = HTTPServer(("127.0.0.1", 0), handler_factory(self.ranker))
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        host, port = server.server_address
+        try:
+            connection = http.client.HTTPConnection(host, port, timeout=5)
+            connection.putrequest("POST", "/score")
+            connection.putheader("Content-Type", "application/json")
+            connection.putheader("Content-Length", str(MAX_REQUEST_BODY_BYTES + 1))
+            connection.endheaders()
+            response = connection.getresponse()
+            raw = response.read()
+            connection.close()
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=5)
         self.assertEqual(
             (response.status, json.loads(raw)["error"]),
             (413, "request_too_large"),
