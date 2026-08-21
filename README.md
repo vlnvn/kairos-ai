@@ -42,5 +42,16 @@ Tests:
 python -m unittest discover -s tests -v
 ```
 
+AI release verification:
+
+```powershell
+python scripts/verify_ai_release.py
+```
+
+The machine-readable release source of truth is
+`artifacts/ai_release_manifest.json`. Human review steps are in
+`docs/AI_RELEASE_CHECKLIST.md`; V1 production evidence and the separate V2
+fixed-recipe reproduction evidence remain explicitly distinguished.
+
 The model requires no future/outcome field. Supplying `pickup_time`, labels,
 completion timestamps, or pickup GPS fields fails closed.

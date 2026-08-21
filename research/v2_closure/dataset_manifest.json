@@ -1,0 +1,19 @@
+{
+  "dataset": "Cainiao-AI/LaDe-P",
+  "official_source": "https://huggingface.co/datasets/Cainiao-AI/LaDe-P",
+  "revision": "f1ddd8dd163028dd5a8ab7d7c83b198ebd2f2167",
+  "license": "Apache-2.0",
+  "format": "Parquet",
+  "raw_rows": 6136147,
+  "actionable_rows": 6135893,
+  "source_period": {"start": "2022-05-01", "end": "2022-10-31"},
+  "files": [
+    {"city": "Chongqing", "filename": "pickup_cq-00000-of-00001-a172031e5392f9d3.parquet", "bytes": 87748263, "sha256": "2aaf370433a6b0f346980493c9f4d145d6feda642d492282eb0b50a0b39fc212", "rows": 1172703},
+    {"city": "Hangzhou", "filename": "pickup_hz-00000-of-00001-2641abebfe50648a.parquet", "bytes": 147333101, "sha256": "89be9318ed7a7231cc66155df351e4d01c5c998f5c9b8eb372e691943b9cffdc", "rows": 2130456},
+    {"city": "Jilin", "filename": "pickup_jl-00000-of-00001-9b430a56a935f284.parquet", "bytes": 20772658, "sha256": "043bdc91ff0c5906ac810e6097407226bc2c51da68bda6f40727f57aaf2737f9", "rows": 261801},
+    {"city": "Shanghai", "filename": "pickup_sh-00000-of-00001-79fabe8088e723a2.parquet", "bytes": 98191560, "sha256": "b2e52986c9e3f9c9b62bf966cfa54db2034337922a9b6baa2aede12a663179a2", "rows": 1424406},
+    {"city": "Yantai", "filename": "pickup_yt-00000-of-00001-6d21a4dccd28ee03.parquet", "bytes": 89205786, "sha256": "4c0263b4f33d5c21cc057842d96d18fb893d0bf79356e6cc784edf4c27b07a21", "rows": 1146781}
+  ],
+  "processed_data_policy": "Derived caches remain local and untracked. Rebuild methodology is inherited from the verified V2 dataset builder at commit 2301a4c0ef53e4db7aa0a4463bc2f93a1cbe26aa.",
+  "verification": "Source revision, clean source checkout, file sizes, and SHA-256 values independently verified before preregistration."
+}

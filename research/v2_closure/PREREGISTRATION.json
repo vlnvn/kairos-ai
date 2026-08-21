@@ -1,0 +1,113 @@
+{
+  "benchmark": "KAIROS V2 fixed-recipe reproducibility closure",
+  "version": "1.0.0",
+  "purpose": "Characterize fresh reproductions of the frozen KAIROS 21-feature CatBoost recipe and the fixed V2 logistic baseline on the clean chronological V2 benchmark without model selection.",
+  "evidence_boundary": {
+    "production_binary_evaluated": false,
+    "production_binary_replaced": false,
+    "claim": "A fresh reproduction of the frozen KAIROS model recipe and 21-feature contract is evaluated under the preregistered V2 benchmark."
+  },
+  "dataset": {
+    "source": "Cainiao-AI/LaDe-P",
+    "official_source": "https://huggingface.co/datasets/Cainiao-AI/LaDe-P",
+    "revision": "f1ddd8dd163028dd5a8ab7d7c83b198ebd2f2167",
+    "license": "Apache-2.0",
+    "raw_rows": 6136147,
+    "actionable_rows": 6135893,
+    "raw_files": [
+      {"filename": "pickup_cq-00000-of-00001-a172031e5392f9d3.parquet", "bytes": 87748263, "sha256": "2aaf370433a6b0f346980493c9f4d145d6feda642d492282eb0b50a0b39fc212"},
+      {"filename": "pickup_hz-00000-of-00001-2641abebfe50648a.parquet", "bytes": 147333101, "sha256": "89be9318ed7a7231cc66155df351e4d01c5c998f5c9b8eb372e691943b9cffdc"},
+      {"filename": "pickup_jl-00000-of-00001-9b430a56a935f284.parquet", "bytes": 20772658, "sha256": "043bdc91ff0c5906ac810e6097407226bc2c51da68bda6f40727f57aaf2737f9"},
+      {"filename": "pickup_sh-00000-of-00001-79fabe8088e723a2.parquet", "bytes": 98191560, "sha256": "b2e52986c9e3f9c9b62bf966cfa54db2034337922a9b6baa2aede12a663179a2"},
+      {"filename": "pickup_yt-00000-of-00001-6d21a4dccd28ee03.parquet", "bytes": 89205786, "sha256": "4c0263b4f33d5c21cc057842d96d18fb893d0bf79356e6cc784edf4c27b07a21"}
+    ],
+    "exclusive_exclusion_order": [
+      "critical_timestamp_parse_failure",
+      "window_start_after_window_end",
+      "acceptance_after_actual_pickup",
+      "acceptance_after_promised_window_end"
+    ],
+    "exclusive_exclusions": {
+      "critical_timestamp_parse_failure": 0,
+      "window_start_after_window_end": 0,
+      "acceptance_after_actual_pickup": 0,
+      "acceptance_after_promised_window_end": 254
+    }
+  },
+  "target": {
+    "early": "pickup_time < time_window_start",
+    "late": "pickup_time > time_window_end",
+    "off_window": "early OR late"
+  },
+  "decision_epoch": "target-task acceptance time",
+  "feature_contract": {
+    "count": 21,
+    "canonical_json_sha256": "b36985270b8ff9659fb5750c56eebefb58cb54bbcb6279e7346c2e3895deb7df",
+    "names": [
+      "slack_to_start_h", "slack_to_end_h", "window_width_h", "accept_hour_sin",
+      "accept_hour_cos", "day_of_week", "task_lng", "task_lat",
+      "accept_to_task_km", "accept_gps_missing", "prior_courier_accepts_day",
+      "prior_aoi_accepts_day", "pending_other_count", "pending_same_aoi_count",
+      "pending_due_before_count", "pending_overlap_count", "oldest_pending_age_h",
+      "pending_centroid_distance_km", "pending_location_missing", "region_id", "aoi_type"
+    ],
+    "categorical": ["region_id", "aoi_type"],
+    "raw_identity_features": false,
+    "future_fields": false
+  },
+  "decision_groups": {
+    "rule": "city plus fixed 15-minute floor of acceptance timestamp",
+    "capacity": "K=max(1,ceil(fraction*group_target_count))",
+    "primary_fraction": 0.10
+  },
+  "splits": {
+    "train": {"start": "2022-05-01", "end": "2022-09-06", "sample": "label-blind complete-group SHA-256 order to at least 100000 rows per city"},
+    "validation": {"start": "2022-09-07", "end": "2022-10-04", "sample": "all actionable rows"},
+    "final": {"start": "2022-10-05", "end": "2022-10-31", "sample": "all actionable rows"}
+  },
+  "models": {
+    "B0_logistic": {
+      "pipeline": "StandardScaler numeric plus OneHotEncoder(handle_unknown=ignore) categorical plus LogisticRegression",
+      "C": 1.0,
+      "class_weight": "balanced",
+      "solver": "saga",
+      "max_iter": 100,
+      "tol": 0.001,
+      "random_state": 20260810
+    },
+    "B1_catboost_recipe_control": {
+      "family": "CatBoostClassifier",
+      "iterations": 300,
+      "depth": 6,
+      "learning_rate": 0.05,
+      "loss_function": "Logloss",
+      "auto_class_weights": "Balanced",
+      "random_seed": 20260810,
+      "allow_writing_files": false
+    }
+  },
+  "metrics": {
+    "primary": "micro Recall@10 over decision groups",
+    "secondary": ["micro Recall@5", "micro Recall@20", "PR-AUC", "per-city Recall@10", "EARLY Recall@10", "LATE Recall@10", "target prevalence", "task counts"],
+    "final_only": ["unseen-courier Recall@10", "unseen-AOI Recall@10", "10% review count"]
+  },
+  "paired_bootstrap": {
+    "unit": "source date",
+    "replicates": 2000,
+    "seed": 20260810,
+    "estimand": "CatBoost minus Logistic micro Recall@10 in percentage points",
+    "interval": "2.5th and 97.5th percentiles"
+  },
+  "unseen_entity_definition": "Final rows whose courier_id or aoi_id is absent from the combined TRAIN plus VALIDATION fitting rows.",
+  "seeds": {"logistic": 20260810, "catboost": 20260810, "bootstrap": 20260810},
+  "declarations": {
+    "model_selection": false,
+    "hyperparameter_search": false,
+    "feature_search": false,
+    "calibration": false,
+    "early_stopping": false,
+    "post_result_tuning": false,
+    "validation_openings": 1,
+    "final_openings": 1
+  }
+}

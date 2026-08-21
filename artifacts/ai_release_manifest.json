@@ -1,0 +1,58 @@
+{
+  "identity": {
+    "release_name": "KAIROS AI Release 1.0",
+    "release_status": "frozen_for_consumer_integration_review",
+    "product_role": "capacity-constrained prospective pickup-window compliance triage"
+  },
+  "production_artifact": {
+    "path": "artifacts/kairos_final.cbm",
+    "sha256": "b3d8f13e73d0faee1389b1a51d3db581403502d8ce85c6fca45bd6688505c315",
+    "bytes": 756516,
+    "model_family": "CatBoostClassifier",
+    "tree_count": 300,
+    "loss_function": "Logloss",
+    "feature_count": 21,
+    "feature_schema_canonical_json_sha256": "b36985270b8ff9659fb5750c56eebefb58cb54bbcb6279e7346c2e3895deb7df",
+    "categorical_feature_indices": [19, 20]
+  },
+  "runtime": {
+    "python_requirement": ">=3.11",
+    "verified_python": "3.12.13",
+    "catboost": "1.2.10",
+    "numpy": "2.3.5",
+    "pandas": "3.0.1",
+    "source": "pyproject.toml pins and isolated release-verification environment"
+  },
+  "contracts": {
+    "decision_epoch": "target-task acceptance time",
+    "target": "pickup before promised start OR after promised end",
+    "review_score": "uncalibrated ordering score only",
+    "capacity": "max(1, ceil(review_budget_fraction * target_count))",
+    "human_ownership": "human dispatcher owns intervention",
+    "output_decisions": ["WINDOW_REVIEW", "KEEP_ASSIGNMENT"]
+  },
+  "regression": {
+    "canonical_fixture": "examples/input_snapshot.json",
+    "canonical_golden_sha256": "f3bd4de96ff3b282bd01671c700fa29f72191840a0a48045c682802af6df88d8",
+    "unit_test_count": 29,
+    "release_verifier": "scripts/verify_ai_release.py"
+  },
+  "evidence": {
+    "v1_frozen_scientific_evidence": "artifacts/final_lock_evidence.json",
+    "v2_reproducibility_preregistration": "research/v2_closure/PREREGISTRATION.json",
+    "v2_reproducibility_validation": "research/v2_closure/validation_results.json",
+    "v2_reproducibility_final": "research/v2_closure/final_results.json",
+    "v2_reproducibility_report": "research/v2_closure/V2_REPRODUCIBILITY_REPORT.md",
+    "reliability_report": "artifacts/ai_reliability_report.json",
+    "evidence_boundary": "V1 values describe the frozen production artifact evidence. V2 values describe fresh fixed-recipe reproductions, not the V1 binary."
+  },
+  "limitations": [
+    "China-to-Indonesia transfer is unvalidated.",
+    "The combined target is early-heavy and independent late-only performance is not established.",
+    "review_score is uncalibrated.",
+    "Intervention impact is unmeasured.",
+    "Real-operator integration is unvalidated."
+  ],
+  "predictive_model_changed": false,
+  "prediction_contract_changed": false
+}
