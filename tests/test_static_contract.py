@@ -46,21 +46,36 @@ class StaticProductContractTests(unittest.TestCase):
         self.assertEqual(HTML.count('id="run"'), 1)
         self.assertIn('aria-live="polite"', HTML)
         for state in (
-            "Invalid JSON",
-            "Snapshot rejected",
-            "verified model is unavailable",
+            "INVALID JSON",
+            "INVALID SNAPSHOT",
+            "MODEL UNAVAILABLE",
+            "FUTURE DATA REJECTED",
             "8 MiB local-demo limit",
-            "Scoring accepted pickup promises",
+            "real request duration",
         ):
             with self.subTest(state=state):
                 self.assertIn(state, SCRIPT)
 
-    def test_queue_uses_real_buttons_and_accessible_filters(self):
+    def test_queue_and_focus_use_semantic_controls(self):
         self.assertIn("document.createElement('button')", SCRIPT)
-        self.assertIn("aria-current", SCRIPT)
-        self.assertIn("aria-pressed", HTML)
+        self.assertIn('id="back-to-queue"', HTML)
+        self.assertIn("input.type = 'radio'", SCRIPT)
+        self.assertIn("label.dataset.selected", SCRIPT)
         self.assertIn(":focus-visible", STYLES)
         self.assertIn("prefers-reduced-motion", STYLES)
+
+    def test_manifest_instrument_and_mode_transition_are_explicit(self):
+        self.assertIn("promise-instrument", SCRIPT)
+        self.assertIn("promise-axis", SCRIPT)
+        self.assertIn("accepted-label", SCRIPT)
+        self.assertIn("showTaskFocus", SCRIPT)
+        self.assertIn("showOnly('focus')", SCRIPT)
+        self.assertNotIn("setTimeout", SCRIPT)
+
+    def test_capacity_changes_cutoff_through_real_request(self):
+        self.assertIn("snapshot.review_budget_fraction = capacity", SCRIPT)
+        self.assertIn("if (wasOutput)", SCRIPT)
+        self.assertIn("runScoring();", SCRIPT)
 
     def test_responsive_contract_has_desktop_tablet_and_mobile_rules(self):
         widths = [int(value) for value in re.findall(r"max-width:(\d+)px", STYLES)]
