@@ -10,8 +10,8 @@
   --review:#9b3b2c;
   --review-soft:#f3e2dc;
   --disabled:#9ba49f;
-  --sans:"IBM Plex Sans","Segoe UI",sans-serif;
-  --mono:"IBM Plex Mono",Consolas,monospace
+  --sans:system-ui,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace
 }
 
 * { box-sizing:border-box }
@@ -22,7 +22,7 @@ body {
   margin:0;
   background:var(--paper);
   color:var(--ink);
-  font:15px/1.45 var(--sans)
+  font:16px/1.5 var(--sans)
 }
 
 button,input { font:inherit }
@@ -111,7 +111,7 @@ button { cursor:pointer }
 .screen-state {
   margin:16px 106px 0 0;
   color:var(--muted);
-  font-size:11px;
+  font-size:12px;
   text-transform:uppercase
 }
 
@@ -125,13 +125,13 @@ button { cursor:pointer }
 .eyebrow {
   margin:0 0 8px;
   color:var(--brand);
-  font-size:11px;
+  font-size:12px;
   text-transform:uppercase
 }
 
 h1 {
   margin:0;
-  font-size:clamp(38px,4.2vw,60px);
+  font-size:clamp(36px,3.8vw,52px);
   line-height:1.03;
   letter-spacing:-.025em;
   font-weight:600
@@ -141,7 +141,7 @@ h1 {
   max-width:720px;
   margin:14px 0 0;
   color:var(--muted);
-  font-size:15px
+  font-size:16px
 }
 
 .intake-object {
@@ -166,7 +166,7 @@ h1 {
 
 .object-label {
   color:var(--brand);
-  font-size:11px;
+  font-size:12px;
   text-transform:uppercase
 }
 
@@ -192,7 +192,7 @@ h1 {
 .capacity-control legend {
   padding:0;
   margin-bottom:12px;
-  font-size:12px;
+  font-size:13px;
   font-weight:600
 }
 
@@ -219,14 +219,14 @@ h1 {
 .capacity-option:last-child { border-right:0 }
 .capacity-option[data-selected=true] { background:var(--brand);color:var(--surface) }
 .capacity-option:focus-within { outline:3px solid var(--ink);outline-offset:-3px }
-.capacity-label { font-size:12px }
-.capacity-count { font:11px/1.2 var(--mono);color:var(--muted) }
+.capacity-label { font-size:13px }
+.capacity-count { font:12px/1.2 var(--mono);color:var(--muted) }
 .capacity-option[data-selected=true] .capacity-count { color:var(--surface) }
 
 .capacity-note {
   margin:10px 0 0;
   color:var(--muted);
-  font-size:11px
+  font-size:12px
 }
 
 .primary-action {
@@ -248,13 +248,13 @@ h1 {
   padding-top:14px;
   border-top:1px solid var(--rule);
   color:var(--muted);
-  font-size:12px
+  font-size:13px
 }
 
 .ownership-note strong {
   margin-right:10px;
   color:var(--brand);
-  font:700 11px var(--mono);
+  font:700 12px var(--mono);
   text-transform:uppercase
 }
 
@@ -262,9 +262,11 @@ h1 {
   min-height:52px;
   display:flex;
   align-items:center;
+  justify-content:space-between;
+  gap:16px;
   border-bottom:1px solid var(--rule);
   color:var(--muted);
-  font-size:13px
+  font-size:14px
 }
 
 .status-line[data-state=loading] { color:var(--brand) }
@@ -282,6 +284,13 @@ h1 {
   background:transparent;
   color:var(--ink);
   font-weight:700
+}
+
+.status-action {
+  flex:0 0 auto;
+  min-height:36px;
+  margin-top:0;
+  color:var(--brand)
 }
 
 .results { padding-top:34px }
@@ -310,7 +319,7 @@ h1 {
   border-top:1px solid var(--rule);
   border-bottom:1px solid var(--rule);
   color:var(--muted);
-  font-size:11px;
+  font-size:12px;
   text-transform:uppercase
 }
 
@@ -339,27 +348,27 @@ h1 {
 }
 
 .task-block { min-width:0 }
-.task-id { display:block;font:700 14px var(--mono);overflow-wrap:anywhere }
-.accepted-label { display:block;margin-top:4px;color:var(--muted);font-size:11px }
+.task-id { display:block;font:700 16px var(--mono);overflow-wrap:anywhere }
+.accepted-label { display:block;margin-top:4px;color:var(--muted);font-size:12px }
 
 .promise-instrument { min-width:0 }
-.promise-label { display:block;color:var(--ink);font-size:11px;text-transform:uppercase }
+.promise-label { display:block;color:var(--ink);font-size:12px;text-transform:uppercase }
 .promise-axis {
   display:grid;
   grid-template-columns:auto auto minmax(90px,1fr) auto;
   align-items:center;
   gap:12px;
   margin-top:7px;
-  font:700 15px var(--mono)
+  font:700 16px var(--mono)
 }
 
-.promise-date { font-size:11px }
+.promise-date { font-size:12px }
 .promise-line { height:2px;background:var(--brand) }
 
 .decision {
   justify-self:end;
   color:var(--review);
-  font-size:12px;
+  font-size:13px;
   text-transform:uppercase
 }
 
@@ -383,7 +392,7 @@ h1 {
 
 .focus-heading h1 { font-size:34px }
 .focus-heading .eyebrow { color:var(--surface) }
-.focus-owner { max-width:340px;margin:0;font-size:11px;text-align:right }
+.focus-owner { max-width:340px;margin:0;font-size:13px;text-align:right }
 
 .focus-window {
   margin-top:20px;
@@ -404,8 +413,8 @@ h1 {
 }
 
 .context-item { margin:0;padding:12px 16px }
-.context-item dt { color:var(--muted);font-size:11px;text-transform:uppercase }
-.context-item dd { margin:4px 0 0;font:700 13px var(--mono) }
+.context-item dt { color:var(--muted);font-size:12px;text-transform:uppercase }
+.context-item dd { margin:4px 0 0;font:700 14px var(--mono) }
 
 .human-action {
   margin-top:38px;
@@ -414,8 +423,8 @@ h1 {
   background:var(--surface)
 }
 
-.human-action h2 { margin:0;color:var(--brand);font-size:11px;text-transform:uppercase }
-.human-action p { margin:8px 0 0;font-size:12px }
+.human-action h2 { margin:0;color:var(--brand);font-size:12px;text-transform:uppercase }
+.human-action p { margin:8px 0 0;font-size:14px }
 
 button:focus-visible,
 .file-target:has(+ input:focus-visible),
@@ -429,7 +438,10 @@ a:focus-visible {
   .screen-state { margin-right:0 }
   .output-heading { grid-template-columns:1fr;align-items:start }
   .output-heading .capacity-control { width:min(520px,100%) }
-  .queue-head,.queue-item { grid-template-columns:58px minmax(155px,190px) minmax(320px,1fr) 150px }
+  .queue-head,.queue-item {
+    grid-template-columns:52px minmax(140px,170px) minmax(270px,1fr) 132px;
+    gap:12px
+  }
 }
 
 @media(max-width:680px) {
@@ -441,7 +453,7 @@ a:focus-visible {
   .screen-state { max-width:86px;margin-top:10px;text-align:right }
   .intake,.results,.task-focus,.feedback { padding-top:28px }
   h1 { font-size:30px;line-height:1.12 }
-  .lede { font-size:13px }
+  .lede { font-size:15px }
   .intake-object { margin-top:28px }
   .intake-actions { display:block;margin-top:22px }
   .capacity-control { width:100%;padding:14px }
@@ -460,10 +472,10 @@ a:focus-visible {
     padding:14px 0
   }
   .rank { font-size:20px }
-  .task-id { font-size:13px }
+  .task-id { font-size:15px }
   .decision { grid-column:3;grid-row:1;align-self:start;font-size:12px;white-space:nowrap }
   .promise-instrument { grid-column:1/-1;grid-row:2;padding-left:52px }
-  .promise-axis { grid-template-columns:auto auto minmax(50px,1fr) auto;font-size:13px }
+  .promise-axis { grid-template-columns:auto auto minmax(50px,1fr) auto;font-size:15px }
   .focus-heading { display:block;padding:16px }
   .focus-heading h1 { font-size:28px }
   .focus-owner { margin-top:10px;text-align:left }

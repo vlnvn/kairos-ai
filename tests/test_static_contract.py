@@ -65,6 +65,36 @@ class StaticProductContractTests(unittest.TestCase):
         self.assertIn(":focus-visible", STYLES)
         self.assertIn("prefers-reduced-motion", STYLES)
 
+    def test_load_another_snapshot_resets_intake_without_resetting_capacity(self):
+        self.assertEqual(HTML.count('id="load-another"'), 1)
+        self.assertIn("elements.loadAnother.addEventListener('click', resetToIntake)", SCRIPT)
+        reset = SCRIPT.split("function resetToIntake()", 1)[1].split("\n}", 1)[0]
+        for contract in (
+            "clearResults();",
+            "snapshot = null;",
+            "elements.file.value = '';",
+            "elements.fileTitle.textContent = 'Choose a JSON snapshot';",
+            "elements.run.disabled = true;",
+            "elements.loadAnother.hidden = true;",
+            "setScreenState('INPUT');",
+            "showOnly('intake');",
+        ):
+            with self.subTest(contract=contract):
+                self.assertIn(contract, reset)
+        self.assertNotIn("capacity =", reset)
+
+    def test_recording_typography_uses_local_system_fonts_and_readable_labels(self):
+        self.assertIn('--sans:system-ui,"Segoe UI",sans-serif', STYLES)
+        self.assertIn('--mono:ui-monospace,"Cascadia Mono",Consolas,monospace', STYLES)
+        for declaration in (
+            "font:16px/1.5 var(--sans)",
+            ".task-id { display:block;font:700 16px var(--mono)",
+            ".accepted-label { display:block;margin-top:4px;color:var(--muted);font-size:12px",
+            ".promise-label { display:block;color:var(--ink);font-size:12px",
+        ):
+            with self.subTest(declaration=declaration):
+                self.assertIn(declaration, STYLES)
+
     def test_manifest_instrument_and_mode_transition_are_explicit(self):
         self.assertIn("promise-instrument", SCRIPT)
         self.assertIn("promise-axis", SCRIPT)

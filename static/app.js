@@ -33,6 +33,7 @@ const elements = {
   focusTitle: document.getElementById('focus-title'),
   focusWindow: document.getElementById('focus-window'),
   intake: document.getElementById('intake'),
+  loadAnother: document.getElementById('load-another'),
   queue: document.getElementById('queue'),
   queueEmpty: document.getElementById('queue-empty'),
   results: document.getElementById('results'),
@@ -248,6 +249,7 @@ function showTaskFocus(result) {
   });
 
   setScreenState('OUTPUT / TASK FOCUS');
+  elements.loadAnother.hidden = false;
   showOnly('focus');
   elements.backToQueue.focus();
 }
@@ -260,6 +262,7 @@ function renderResults() {
   renderCapacityControls();
   renderQueue();
   setScreenState(`OUTPUT / CAPACITY ${Math.round(metadata.review_budget_fraction * 100)}%`);
+  elements.loadAnother.hidden = false;
   showOnly('results');
   setStatus('Deterministic ranking complete. Review the queue in rank order.', 'success');
 }
@@ -271,6 +274,22 @@ function clearResults() {
   clearNode(elements.queue);
   clearNode(elements.focusWindow);
   clearNode(elements.focusContext);
+}
+
+function resetToIntake() {
+  clearResults();
+  snapshot = null;
+  elements.file.value = '';
+  elements.fileTitle.textContent = 'Choose a JSON snapshot';
+  elements.fileName.textContent = 'Decision-time fields only · future-known values are rejected';
+  elements.run.disabled = true;
+  elements.run.textContent = 'Protect Promises';
+  elements.loadAnother.hidden = true;
+  renderCapacityControls();
+  setScreenState('INPUT');
+  showOnly('intake');
+  setStatus('Load a valid snapshot to begin.');
+  elements.file.focus();
 }
 
 function showFeedback(kind, message) {
@@ -313,6 +332,7 @@ function responseFailure(status, code) {
 async function runScoring() {
   if (!snapshot) return;
   clearResults();
+  elements.loadAnother.hidden = true;
   showOnly('intake');
   elements.run.disabled = true;
   elements.run.textContent = 'Ranking snapshot…';
@@ -393,6 +413,7 @@ elements.file.addEventListener('change', async event => {
 });
 
 elements.run.addEventListener('click', runScoring);
+elements.loadAnother.addEventListener('click', resetToIntake);
 
 elements.backToQueue.addEventListener('click', () => {
   setScreenState(`OUTPUT / CAPACITY ${Math.round(metadata.review_budget_fraction * 100)}%`);
