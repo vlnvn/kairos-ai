@@ -1,10 +1,10 @@
 'use strict';
 
 const CAPACITIES = [
-  {value: 0.05, label: '5%', count: '7 tasks'},
-  {value: 0.1, label: '10%', count: '14 tasks'},
-  {value: 0.2, label: '20%', count: '27 tasks'},
-  {value: 1, label: '100%', count: '134 tasks'},
+  {value: 0.05, label: '5%'},
+  {value: 0.1, label: '10%'},
+  {value: 0.2, label: '20%'},
+  {value: 1, label: '100%'},
 ];
 
 const FUTURE_FIELDS = new Set([
@@ -74,7 +74,7 @@ function setStatus(message, state = 'neutral') {
 }
 
 function setScreenState(value) {
-  elements.screenState.textContent = `${value} · RC 6d42fbbe`;
+  elements.screenState.textContent = value;
 }
 
 function showOnly(name) {
@@ -86,6 +86,7 @@ function showOnly(name) {
 }
 
 function renderCapacityControls() {
+  const totalTargets = targetCountForCapacity();
   elements.capacityHosts.forEach(host => {
     clearNode(host);
     const variant = host.dataset.variant || 'control';
@@ -113,13 +114,32 @@ function renderCapacityControls() {
 
       label.appendChild(input);
       label.appendChild(createText('span', 'capacity-label', option.label));
-      label.appendChild(createText('span', 'capacity-count', option.count));
+      const count = capacityCount(option.value, totalTargets);
+      if (count !== null) {
+        const unit = count === 1 ? 'task' : 'tasks';
+        label.appendChild(createText('span', 'capacity-count', `${count} ${unit}`));
+      }
       options.appendChild(label);
     });
     fieldset.appendChild(options);
     fieldset.appendChild(createText('p', 'capacity-note', 'Dispatcher selects the cutoff; task order remains unchanged.'));
     host.appendChild(fieldset);
   });
+}
+
+function targetCountForCapacity() {
+  if (metadata && Number.isInteger(metadata.total_targets) && metadata.total_targets > 0) {
+    return metadata.total_targets;
+  }
+  if (snapshot && Array.isArray(snapshot.target_task_ids) && snapshot.target_task_ids.length > 0) {
+    return snapshot.target_task_ids.length;
+  }
+  return 0;
+}
+
+function capacityCount(fraction, totalTargets) {
+  if (!Number.isInteger(totalTargets) || totalTargets <= 0) return null;
+  return Math.max(1, Math.ceil(fraction * totalTargets));
 }
 
 function formatMoment(value) {
@@ -134,7 +154,8 @@ function windowParts(task) {
   const start = formatMoment(task.window_start).split(' ');
   const end = formatMoment(task.window_end).split(' ');
   return {
-    date: start.slice(0, 2).join(' '),
+    startDate: start.slice(0, 2).join(' '),
+    endDate: end.slice(0, 2).join(' '),
     start: start.at(-1),
     end: end.at(-1),
   };
@@ -157,10 +178,11 @@ function appendPromiseInstrument(parent, task) {
 
   const axis = document.createElement('span');
   axis.className = 'promise-axis';
-  axis.appendChild(createText('span', 'promise-date', parts.date));
+  axis.appendChild(createText('span', 'promise-date', parts.startDate));
   axis.appendChild(createText('span', 'promise-start', parts.start));
   axis.appendChild(createText('span', 'promise-line', ''));
-  axis.appendChild(createText('span', 'promise-end', parts.end));
+  const endLabel = parts.startDate === parts.endDate ? parts.end : `${parts.endDate} ${parts.end}`;
+  axis.appendChild(createText('span', 'promise-end', endLabel));
   instrument.appendChild(axis);
   parent.appendChild(instrument);
 }
@@ -338,6 +360,7 @@ function setCapacity(value) {
 elements.file.addEventListener('change', async event => {
   clearResults();
   snapshot = null;
+  renderCapacityControls();
   elements.run.disabled = true;
   const file = event.target.files && event.target.files[0];
   if (!file) {
@@ -357,6 +380,7 @@ elements.file.addEventListener('change', async event => {
     }
     snapshot = parsed;
     snapshot.review_budget_fraction = capacity;
+    renderCapacityControls();
     elements.fileTitle.textContent = file.name;
     elements.fileName.textContent = `${parsed.target_task_ids?.length ?? 'Unknown'} target promises · snapshot accepted for request validation`;
     elements.run.disabled = false;
